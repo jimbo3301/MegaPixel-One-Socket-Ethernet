@@ -13,11 +13,14 @@
 #include <avr/pgmspace.h>
 #include <SPI.h>
 
+#define use_W5200
+//#define use_W5100
+
 #define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
 //#define SPI_ETHERNET_SETTINGS SPISettings(8000000, MSBFIRST, SPI_MODE0)
 //#define SPI_ETHERNET_SETTINGS SPISettings(4000000, MSBFIRST, SPI_MODE0)
 
-#define MAX_SOCK_NUM 4
+#define MAX_SOCK_NUM 1
 
 typedef uint8_t SOCKET;
 
@@ -191,7 +194,11 @@ private:
   }
 
   static uint16_t CH_BASE;
-  static const uint16_t CH_SIZE = 0x0100;
+  #ifdef use_W5200
+    static const uint16_t CH_SIZE = 0x0100;
+  #elif use_W5100
+    static const uint16_t CH_SIZE = 0x0100;
+  #endif
 
 #define __SOCKET_REGISTER8(name, address)                    \
   static inline void write##name(SOCKET _s, uint8_t _data) { \
@@ -256,13 +263,17 @@ private:
   static const uint8_t  RST = 7; // Reset BIT
 
 public:
-  static const int SOCKETS = 4;
+  #ifdef use_W5200
+    static const int SOCKETS = 8;
+  #elif use_W5100
+    static const int SOCKETS = 4;
+  #endif
   static uint16_t SMASK;
   static uint16_t SSIZE;
 //private:
   //receive and transmit have same buffer sizes
-  static uint16_t SBASE[SOCKETS]; // Tx buffer base address
-  static uint16_t RBASE[SOCKETS]; // Rx buffer base address
+  static uint16_t SBASE[MAX_SOCK_NUM]; // Tx buffer base address
+  static uint16_t RBASE[MAX_SOCK_NUM]; // Rx buffer base address
 
 private:
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)

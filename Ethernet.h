@@ -7,7 +7,7 @@
 #include "EthernetServer.h"
 #include "Dhcp.h"
 
-#define MAX_SOCK_NUM 4
+#define MAX_SOCK_NUM 1
 
 class EthernetClass {
 private:

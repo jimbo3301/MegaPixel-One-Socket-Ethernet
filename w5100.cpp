@@ -53,7 +53,15 @@ uint8_t W5100Class::init(void)
 
 #ifdef USE_SPIFIFO
   SPI.begin();
-  SPIFIFO.begin(W5200_SS_PIN, SPI_CLOCK_12MHz);  // W5100 is 14 MHz max
+  #ifdef use_W5200
+    #if F_BUS > 48000000
+      SPIFIFO.begin(W5200_SS_PIN, SPI_CLOCK_30MHz);  // i think W5200 is 50 MHz max
+    #else
+      SPIFIFO.begin(W5200_SS_PIN, SPI_CLOCK_24MHz);  // i think W5200 is 50 MHz max
+    #endif
+  #else
+    SPIFIFO.begin(W5200_SS_PIN, SPI_CLOCK_12MHz);  // W5100 is 14 MHz max
+  #endif
 #else
   SPI.begin();
   SPI.setClockDivider(SPI_CLOCK_DIV2);
@@ -63,8 +71,8 @@ uint8_t W5100Class::init(void)
   SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
   if (isW5100()) {
     CH_BASE = 0x0400;
-    SSIZE = 2048;
-    SMASK = 0x07FF;
+    SSIZE = 2048*4;
+    SMASK = SSIZE-1;;
     TXBUF_BASE = 0x4000;
     RXBUF_BASE = 0x6000;
     writeTMSR(0x55);
@@ -72,8 +80,8 @@ uint8_t W5100Class::init(void)
 
   } else if (isW5200()) {
     CH_BASE = 0x4000;
-    SSIZE = 4096;
-    SMASK = 0x0FFF;
+    SSIZE = 4096*4;
+    SMASK = SSIZE-1;
     TXBUF_BASE = 0x8000;
     RXBUF_BASE = 0xC000;
     for (i=0; i<MAX_SOCK_NUM; i++) {
