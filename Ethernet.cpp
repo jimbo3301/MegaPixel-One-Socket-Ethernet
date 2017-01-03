@@ -1,5 +1,9 @@
 #include "Ethernet.h"
+#ifndef   _use_LAN8720_
 #include "w5100.h"
+#else
+#include "LAN8720.h"
+#endif
 #include "Dhcp.h"
 
 IPAddress EthernetClass::_dnsServerAddress;
@@ -10,6 +14,7 @@ int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long resp
 	static DhcpClass s_dhcp;
 	_dhcp = &s_dhcp;
 
+  #ifndef   _use_LAN8720_
 	// Initialise the basic info
 	W5100.init();
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -30,6 +35,9 @@ int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long resp
 		_dnsServerAddress = _dhcp->getDnsServerIp();
 		socketPortRand(micros());
 	}
+  #else
+
+  #endif
 	return ret;
 }
 
@@ -59,6 +67,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
 {
+  #ifndef   _use_LAN8720_
 	W5100.init();
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	W5100.setMACAddress(mac);
@@ -72,16 +81,27 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	W5100.setSubnetMask(subnet._address);
 #endif
 	SPI.endTransaction();
+  #else
+  LAN8720.setMACAddress(mac);
+  LAN8720.setIPAddress(ip._address);
+  LAN8720.setGatewayIp(gateway._address);
+	LAN8720.setSubnetMask(subnet._address);
+  #endif
 	_dnsServerAddress = dns;
 }
 
 void EthernetClass::init(uint8_t sspin)
 {
+  #ifndef _use_LAN8720_
 	W5100.setSS(sspin);
+  #else
+  LAN8720.inti();
+  #endif
 }
 
 int EthernetClass::maintain()
 {
+  #ifndef _use_LAN8720_
 	int rc = DHCP_CHECK_NONE;
 	if (_dhcp != NULL) {
 		// we have a pointer to dhcp, use it
@@ -106,44 +126,47 @@ int EthernetClass::maintain()
 		}
 	}
 	return rc;
+  #else
+  #endif
 }
 
 IPAddress EthernetClass::localIP()
 {
 	IPAddress ret;
+  #ifndef   _use_LAN8720_
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	W5100.getIPAddress(ret.raw_address());
 	SPI.endTransaction();
+  #else
+  LAN8720.getIPAddress(ret.raw_address());
+  #endif
 	return ret;
 }
 
 IPAddress EthernetClass::subnetMask()
 {
 	IPAddress ret;
+  #ifndef   _use_LAN8720_
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	W5100.getSubnetMask(ret.raw_address());
 	SPI.endTransaction();
+  #else
+  LAN8720.getSubnetMask(ret.raw_address());
+  #endif
 	return ret;
 }
 
 IPAddress EthernetClass::gatewayIP()
 {
 	IPAddress ret;
+  #ifndef   _use_LAN8720_
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	W5100.getGatewayIp(ret.raw_address());
 	SPI.endTransaction();
+  #else
+  LAN8720.getGatewayIp(ret.raw_address());
+  #endif
 	return ret;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 EthernetClass Ethernet;
