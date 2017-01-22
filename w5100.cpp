@@ -17,10 +17,10 @@
 #endif
 
 //#define W5500_4K_BUFFERS
-#define W5200_2K_BUFFERS
+//#define W5200_2K_BUFFERS
 //#define W5200_4K_BUFFERS
 //#define W5200_8K_BUFFERS        //MAX_SOCK_NUM has to be 2
-//#define W5200_16K_BUFFERS        //MAX_SOCK_NUM has to be 1
+#define W5200_16K_BUFFERS        //MAX_SOCK_NUM has to be 1
 
 // If the core library defines a SS pin, use it as the
 // default.  Otherwise, default the default to pin 10.
