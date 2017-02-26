@@ -6,41 +6,9 @@ uint8_t k66Class::_txNum = 0;
 enetbufferdesc_t k66Class::rxRing[RXSIZE];
 enetbufferdesc_t k66Class::txRing[TXSIZE];
 uint32_t k66Class::rxBuffer[RXSIZE*BUFLEN];
-// uint32_t k66Class::txBuffer[TXSIZE*BUFLEN];
+uint32_t k66Class::txBuffer[TXSIZE*BUFLEN];
 
-enetIP_t k66::_enetIP;
-
-uint8_t k66Class::_socket[MAX_SOCK_NUM];
-
-void k66::openSn(uint8_t socket) {
-  
-}
-void k66::closeSn(uint8_t socket) {
-
-}
-
-void k66::setGatewayIp(const uint8_t * addr) {
-  memcpy(_enetIP.gatewayIP, addr, 4);
-}
-void k66::getGatewayIp(uint8_t * addr) {
-  addr = (uint8_t*) _enetIP.gatewayIP[0];
-}
-
-void k66::setSubnetMask(const uint8_t * addr) {
-  memcpy(_enetIP.subnetMask, addr, 4);
-}
-void k66::getSubnetMask(uint8_t * addr) {
-  addr = (uint8_t*) _enetIP.subnetMask[0];
-}
-
-void k66::setIPAddress(const uint8_t * addr) {
-  memcpy(_enetIP.localIP, addr, 4);
-}
-void k66::getIPAddress(uint8_t * addr) {
-  addr = (uint8_t*) _enetIP.localIP[0];
-}
-
-uint8_t k66Class::init(const uint8_t * macAddrd) {
+void k66Class::init(const uint8_t * macAddrd) {
 
   memcpy(_mac, macAddrd, 6);
 
@@ -75,7 +43,7 @@ uint8_t k66Class::init(const uint8_t * macAddrd) {
 	memset(txRing, 0, sizeof(txRing));
 
   memset(rxBuffer, 0, sizeof(rxBuffer));
-	// memset(txBuffer, 0, sizeof(txBuffer));
+	memset(txBuffer, 0, sizeof(txBuffer));
 
   for (int i=0; i < RXSIZE; i++) {
 		rxRing[i].flags = 0x8000; // empty flag
@@ -83,7 +51,7 @@ uint8_t k66Class::init(const uint8_t * macAddrd) {
 	}
 	rxRing[RXSIZE-1].flags = 0xA000; // empty & wrap flags
 	for (int i=0; i < TXSIZE; i++) {
-	//  txRing[i].buffer = txBuffer + i * BUFLEN;
+	  txRing[i].buffer = txBuffer + i * BUFLEN;
 	}
 	txRing[TXSIZE-1].flags = 0x2000; // wrap flag
 
@@ -116,7 +84,4 @@ uint8_t k66Class::init(const uint8_t * macAddrd) {
 	ENET_RDAR = ENET_RDAR_RDAR;
 	ENET_TDAR = ENET_TDAR_TDAR;
 
-  for (int i = 0; i < MAX_SOCK_NUM; i++) {
-    _socket.status[i] = SocSta::CLOSED;
-  }
 }
