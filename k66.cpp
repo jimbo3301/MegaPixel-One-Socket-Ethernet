@@ -8,6 +8,15 @@ enetbufferdesc_t k66Class::txRing[TXSIZE];
 uint32_t k66Class::rxBuffer[RXSIZE*BUFLEN];
 uint32_t k66Class::txBuffer[TXSIZE*BUFLEN];
 
+
+void k66Class::rxInterrupt() {
+  if ((rxRing[_rxNum].flags & goodRXflag) == 0) {
+    if ()
+
+    EthernetHeader_t *ethHeader = (EthernetHeader_t*)rxRing[_rxNum].buffer;
+
+  }
+}
 void k66Class::init(const uint8_t * macAddrd) {
 
   memcpy(_mac, macAddrd, 6);
