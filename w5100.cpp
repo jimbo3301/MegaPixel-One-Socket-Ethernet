@@ -84,7 +84,12 @@ uint8_t W5100Class::init(void)
 
 #ifdef USE_SPIFIFO
 	SPI.begin();
-	SPIFIFO.begin(ss_pin, SPI_CLOCK_12MHz);  // W5100 is 14 MHz max
+  #if F_BUS == 60000000
+    #warning "30MHz SPI clock"
+	 SPIFIFO.begin(ss_pin, SPI_CLOCK_30MHz);  // W5100 is 14 MHz max
+  #else
+    SPIFIFO.begin(ss_pin, SPI_CLOCK_24MHz);  // W5100 is 14 MHz max
+  #endif
 #else
 	SPI.begin();
 	initSS();
