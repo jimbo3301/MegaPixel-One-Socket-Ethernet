@@ -15,10 +15,13 @@
 #define USE_SPIFIFO
 #endif
 #endif
+// #define W5500_2K_BUFFERS
+// #define W5500_4K_BUFFERS
+#define W5500_16K_BUFFERS
 
-//#define W5500_4K_BUFFERS
+
 //#define W5200_2K_BUFFERS
-//#define W5200_4K_BUFFERS
+// #define W5200_4K_BUFFERS
 //#define W5200_8K_BUFFERS        //MAX_SOCK_NUM has to be 2
 #define W5200_16K_BUFFERS        //MAX_SOCK_NUM has to be 1
 
@@ -126,16 +129,17 @@ uint8_t W5100Class::init(void)
 	// so try it after the fragile W5200
 	} else if (isW5500()) {
 		CH_BASE = 0x1000;
-		#ifdef W5500_4K_BUFFERS
+    #if defined(W5500_16K_BUFFERS)
+    SSIZE = 16384;   // 16K buffers
+		#elif defined(W5500_4K_BUFFERS)
 		SSIZE = 4096;    // 4K buffers
-		SMASK = 0x0FFF;
-		#else
+		#elif defined(W5500_2K_BUFFERS)
 		SSIZE = 2048;    // 2K buffers
-		SMASK = 0x07FF;
 		#endif
+    SMASK = SSIZE - 1;
 		TXBUF_BASE = 0x8000;
 		RXBUF_BASE = 0xC000;
-		#ifdef W5500_4K_BUFFERS
+		#ifndef W5500_2K_BUFFERS
 		for (i=0; i<MAX_SOCK_NUM; i++) {
 			writeSnRX_SIZE(i, SSIZE >> 10);
 			writeSnTX_SIZE(i, SSIZE >> 10);
@@ -285,7 +289,13 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 			((len > 1) ? SPI_CONTINUE : 0));
 	} else if (addr < 0xC000) {
 		// transmit buffers  8000-87FF, 8800-8FFF, 9000-97FF, etc
-		#ifdef W5500_4K_BUFFERS
+    #if defined(W5500_16K_BUFFERS)
+    SPIFIFO.write16(((addr << 1) & 0x0000) | 0x1400 | *buf++, // 16K buffers
+			((len > 1) ? SPI_CONTINUE : 0));
+    #elif defined(W5500_8K_BUFFERS)
+		SPIFIFO.write16(((addr << 1) & 0x2000) | 0x1400 | *buf++, // 8K buffers
+			((len > 1) ? SPI_CONTINUE : 0));
+		#elif defined(W5500_4K_BUFFERS)
 		SPIFIFO.write16(((addr << 1) & 0x6000) | 0x1400 | *buf++, // 4K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#else
@@ -294,7 +304,13 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 		#endif
 	} else {
 		// receive buffers
-		#ifdef W5500_4K_BUFFERS
+    #if defined(W5500_16K_BUFFERS)
+    SPIFIFO.write16(((addr << 1) & 0x0000) | 0x1C00 | *buf++, // 16K buffers
+			((len > 1) ? SPI_CONTINUE : 0));
+    #elif defined(W5500_8K_BUFFERS)
+		SPIFIFO.write16(((addr << 1) & 0x2000) | 0x1C00 | *buf++, // 8K buffers
+			((len > 1) ? SPI_CONTINUE : 0));
+		#elif defined(W5500_4K_BUFFERS)
 		SPIFIFO.write16(((addr << 1) & 0x6000) | 0x1C00 | *buf++, // 4K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#else
@@ -358,7 +374,11 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
       //  10## #nnn nnnn nnnn
       SPI.transfer(addr >> 8);
       SPI.transfer(addr & 0xFF);
-      #ifdef W5500_4K_BUFFERS
+      #if defined(W5500_16K_BUFFERS)
+      SPI.transfer(((addr >> 7) & 0x00) | 0x14); // 16K buffers
+      #elif defined(W5500_8K_BUFFERS)
+      SPI.transfer(((addr >> 7) & 0x20) | 0x14); // 8K buffers
+      #elif defined(W5500_4K_BUFFERS)
       SPI.transfer(((addr >> 7) & 0x60) | 0x14); // 4K buffers
       #else
       SPI.transfer(((addr >> 6) & 0xE0) | 0x14); // 2K buffers
@@ -367,7 +387,11 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
       // receive buffers
       SPI.transfer(addr >> 8);
       SPI.transfer(addr & 0xFF);
-      #ifdef W5500_4K_BUFFERS
+      #if defined(W5500_16K_BUFFERS)
+      SPI.transfer(((addr >> 7) & 0x00) | 0x1C); // 16K buffers
+      #elif defined(W5500_8K_BUFFERS)
+      SPI.transfer(((addr >> 7) & 0x20) | 0x1C); // 8K buffers
+      #elif defined(W5500_4K_BUFFERS)
       SPI.transfer(((addr >> 7) & 0x60) | 0x1C); // 4K buffers
       #else
       SPI.transfer(((addr >> 6) & 0xE0) | 0x1C); // 2K buffers
@@ -483,7 +507,13 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			((len > 1) ? SPI_CONTINUE : 0));
 	} else if (addr < 0xC000) {
 		// transmit buffers  8000-87FF, 8800-8FFF, 9000-97FF, etc
-		#ifdef W5500_4K_BUFFERS
+    #if defined(W5500_16K_BUFFERS)
+    SPIFIFO.write16(((addr << 1) & 0x0000) | 0x1000, // 16K buffers
+			((len > 1) ? SPI_CONTINUE : 0));
+    #elif defined(W5500_8K_BUFFERS)
+    SPIFIFO.write16(((addr << 1) & 0x2000) | 0x1000, // 8K buffers
+			((len > 1) ? SPI_CONTINUE : 0));
+		#elif defined(W5500_4K_BUFFERS)
 		SPIFIFO.write16(((addr << 1) & 0x6000) | 0x1000, // 4K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#else
@@ -492,7 +522,13 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		#endif
 	} else {
 		// receive buffers
-		#ifdef W5500_4K_BUFFERS
+    #if defined(W5500_16K_BUFFERS)
+    SPIFIFO.write16(((addr << 1) & 0x0000) | 0x1800, // 16K buffers
+			((len > 1) ? SPI_CONTINUE : 0));
+    #elif defined(W5500_8K_BUFFERS)
+    SPIFIFO.write16(((addr << 1) & 0x2000) | 0x1800, // 8K buffers
+			((len > 1) ? SPI_CONTINUE : 0));
+		#elif defined(W5500_4K_BUFFERS)
 		SPIFIFO.write16(((addr << 1) & 0x6000) | 0x1800, // 4K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#else
@@ -590,7 +626,11 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
       // receive buffers
       SPI.transfer(addr >> 8);
       SPI.transfer(addr & 0xFF);
-      #ifdef W5500_4K_BUFFERS
+      #if defined(W5500_16K_BUFFERS)
+      SPI.transfer(((addr >> 7) & 0x00) | 0x18); // 16K buffers
+      #elif defined(W5500_8K_BUFFERS)
+      SPI.transfer(((addr >> 7) & 0x20) | 0x18); // 8K buffers
+  		#elif defined(W5500_4K_BUFFERS)
       SPI.transfer(((addr >> 7) & 0x60) | 0x18); // 4K buffers
       #else
       SPI.transfer(((addr >> 6) & 0xE0) | 0x18); // 2K buffers
