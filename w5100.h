@@ -14,11 +14,11 @@
 #include <SPI.h>
 
 // Safe for all chips
-// #define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
+#define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
 
 // Safe for W5200 and W5500, but too fast for W5100
 // uncomment this if you know you'll never need W5100 support
-#if F_BUS == 60000000
+/*#if F_BUS == 60000000
 #define SPI_ETHERNET_SETTINGS SPISettings(30000000, MSBFIRST, SPI_MODE0)
 #elif F_BUS == 64000000
 #define SPI_ETHERNET_SETTINGS SPISettings(32000000, MSBFIRST, SPI_MODE0)
@@ -35,7 +35,7 @@
 #elif F_BUS == 120000000
 #define SPI_ETHERNET_SETTINGS SPISettings(400000000, MSBFIRST, SPI_MODE0)
 #endif
-
+*/
 #define MAX_SOCK_NUM 1
 
 typedef uint8_t SOCKET;
