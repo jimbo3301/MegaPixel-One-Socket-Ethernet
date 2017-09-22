@@ -32,7 +32,7 @@
 #elif defined(CORE_SS0_PIN)
 #define SS_PIN_DEFAULT  CORE_SS0_PIN
 #else
-#define SS_PIN_DEFAULT  10
+#define SS_PIN_DEFAULT  31//10
 #endif
 
 // W5100 controller instance
