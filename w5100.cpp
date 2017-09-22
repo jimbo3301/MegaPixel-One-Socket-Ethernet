@@ -73,7 +73,8 @@ uint8_t W5100Class::init(void)
 {
 	uint16_t TXBUF_BASE, RXBUF_BASE;
 	uint8_t i;
-
+  // SPIprt = new SPIClass(SPI);
+  // ss_pin = 10;
 	// Many Ethernet shields have a CAT811 or similar reset chip
 	// connected to W5100 or W5200 chips.  The W5200 will not work at
 	// all, and may even drive its MISO pin, until given an active low
@@ -86,14 +87,14 @@ uint8_t W5100Class::init(void)
 	//Serial.println("w5100 init");
 
 #ifdef USE_SPIFIFO
-	SPI.begin();
 	SPIFIFO.begin(ss_pin, SPI_CLOCK_MAX);  // W5100 is 14 MHz max
+	SPI1.begin();
 #else
-	SPI.begin();
+	SPI1.begin();
 	initSS();
 	resetSS();
 #endif
-	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+	SPI1.beginTransaction(SPI_ETHERNET_SETTINGS);
 
 	// Attempt W5200 detection first, because W5200 does not properly
 	// reset its SPI state when CS goes high (inactive).  Communication
@@ -168,10 +169,10 @@ uint8_t W5100Class::init(void)
 	} else {
 		//Serial.println("no chip :-(");
 		chip = 0;
-		SPI.endTransaction();
+		SPI1.endTransaction();
 		return 0; // no known chip is responding :-(
 	}
-	SPI.endTransaction();
+	SPI1.endTransaction();
 	// Initialize the socket base addresses
 	for (int i=0; i<MAX_SOCK_NUM; i++) {
 		SBASE[i] = TXBUF_BASE + SSIZE * i;
@@ -340,65 +341,65 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
   if (chip == 51) {
     for (uint16_t i=0; i<len; i++) {
       setSS();
-      SPI.transfer(0xF0);
-      SPI.transfer(addr >> 8);
-      SPI.transfer(addr & 0xFF);
+      SPI1.transfer(0xF0);
+      SPI1.transfer(addr >> 8);
+      SPI1.transfer(addr & 0xFF);
       addr++;
-      SPI.transfer(buf[i]);
+      SPI1.transfer(buf[i]);
       resetSS();
     }
   } else if (chip == 52) {
     setSS();
-    SPI.transfer(addr >> 8);
-    SPI.transfer(addr & 0xFF);
-    SPI.transfer(((len >> 8) & 0x7F) | 0x80);
-    SPI.transfer(len & 0xFF);
+    SPI1.transfer(addr >> 8);
+    SPI1.transfer(addr & 0xFF);
+    SPI1.transfer(((len >> 8) & 0x7F) | 0x80);
+    SPI1.transfer(len & 0xFF);
     for (uint16_t i=0; i<len; i++) {
-      SPI.transfer(buf[i]);
+      SPI1.transfer(buf[i]);
     }
     resetSS();
   } else {
     setSS();
     if (addr < 0x100) {
       // common registers 00nn
-      SPI.transfer(0);
-      SPI.transfer(addr & 0xFF);
-      SPI.transfer(0x04);
+      SPI1.transfer(0);
+      SPI1.transfer(addr & 0xFF);
+      SPI1.transfer(0x04);
     } else if (addr < 0x8000) {
       // socket registers  10nn, 11nn, 12nn, 13nn, etc
-      SPI.transfer(0);
-      SPI.transfer(addr & 0xFF);
-      SPI.transfer(((addr >> 3) & 0xE0) | 0x0C);
+      SPI1.transfer(0);
+      SPI1.transfer(addr & 0xFF);
+      SPI1.transfer(((addr >> 3) & 0xE0) | 0x0C);
     } else if (addr < 0xC000) {
       // transmit buffers  8000-87FF, 8800-8FFF, 9000-97FF, etc
       //  10## #nnn nnnn nnnn
-      SPI.transfer(addr >> 8);
-      SPI.transfer(addr & 0xFF);
+      SPI1.transfer(addr >> 8);
+      SPI1.transfer(addr & 0xFF);
       #if defined(W5500_16K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x00) | 0x14); // 16K buffers
+      SPI1.transfer(((addr >> 7) & 0x00) | 0x14); // 16K buffers
       #elif defined(W5500_8K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x20) | 0x14); // 8K buffers
+      SPI1.transfer(((addr >> 7) & 0x20) | 0x14); // 8K buffers
       #elif defined(W5500_4K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x60) | 0x14); // 4K buffers
+      SPI1.transfer(((addr >> 7) & 0x60) | 0x14); // 4K buffers
       #else
-      SPI.transfer(((addr >> 6) & 0xE0) | 0x14); // 2K buffers
+      SPI1.transfer(((addr >> 6) & 0xE0) | 0x14); // 2K buffers
       #endif
     } else {
       // receive buffers
-      SPI.transfer(addr >> 8);
-      SPI.transfer(addr & 0xFF);
+      SPI1.transfer(addr >> 8);
+      SPI1.transfer(addr & 0xFF);
       #if defined(W5500_16K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x00) | 0x1C); // 16K buffers
+      SPI1.transfer(((addr >> 7) & 0x00) | 0x1C); // 16K buffers
       #elif defined(W5500_8K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x20) | 0x1C); // 8K buffers
+      SPI1.transfer(((addr >> 7) & 0x20) | 0x1C); // 8K buffers
       #elif defined(W5500_4K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x60) | 0x1C); // 4K buffers
+      SPI1.transfer(((addr >> 7) & 0x60) | 0x1C); // 4K buffers
       #else
-      SPI.transfer(((addr >> 6) & 0xE0) | 0x1C); // 2K buffers
+      SPI1.transfer(((addr >> 6) & 0xE0) | 0x1C); // 2K buffers
       #endif
     }
     for (uint16_t i=0; i<len; i++) {
-      SPI.transfer(buf[i]);
+      SPI1.transfer(buf[i]);
     }
     resetSS();
   }
@@ -583,61 +584,61 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
   if (chip == 51) {
     for (uint16_t i=0; i<len; i++) {
       setSS();
-      SPI.transfer(0x0F);
-      SPI.transfer(addr >> 8);
-      SPI.transfer(addr & 0xFF);
+      SPI1.transfer(0x0F);
+      SPI1.transfer(addr >> 8);
+      SPI1.transfer(addr & 0xFF);
       addr++;
-      buf[i] = SPI.transfer(0);
+      buf[i] = SPI1.transfer(0);
       resetSS();
     }
   } else if (chip == 52) {
     setSS();
-    SPI.transfer(addr >> 8);
-    SPI.transfer(addr & 0xFF);
-    SPI.transfer((len >> 8) & 0x7F);
-    SPI.transfer(len & 0xFF);
+    SPI1.transfer(addr >> 8);
+    SPI1.transfer(addr & 0xFF);
+    SPI1.transfer((len >> 8) & 0x7F);
+    SPI1.transfer(len & 0xFF);
     for (uint16_t i=0; i<len; i++) {
-      buf[i] = SPI.transfer(0);
+      buf[i] = SPI1.transfer(0);
     }
     resetSS();
   } else {
     setSS();
     if (addr < 0x100) {
       // common registers 00nn
-      SPI.transfer(0);
-      SPI.transfer(addr & 0xFF);
-      SPI.transfer(0x00);
+      SPI1.transfer(0);
+      SPI1.transfer(addr & 0xFF);
+      SPI1.transfer(0x00);
     } else if (addr < 0x8000) {
       // socket registers  10nn, 11nn, 12nn, 13nn, etc
-      SPI.transfer(0);
-      SPI.transfer(addr & 0xFF);
-      SPI.transfer(((addr >> 3) & 0xE0) | 0x08);
+      SPI1.transfer(0);
+      SPI1.transfer(addr & 0xFF);
+      SPI1.transfer(((addr >> 3) & 0xE0) | 0x08);
     } else if (addr < 0xC000) {
       // transmit buffers  8000-87FF, 8800-8FFF, 9000-97FF, etc
       //  10## #nnn nnnn nnnn
-      SPI.transfer(addr >> 8);
-      SPI.transfer(addr & 0xFF);
+      SPI1.transfer(addr >> 8);
+      SPI1.transfer(addr & 0xFF);
       #ifdef W5500_4K_BUFFERS
-      SPI.transfer(((addr >> 7) & 0x60) | 0x10); // 4K buffers
+      SPI1.transfer(((addr >> 7) & 0x60) | 0x10); // 4K buffers
       #else
-      SPI.transfer(((addr >> 6) & 0xE0) | 0x10); // 2K buffers
+      SPI1.transfer(((addr >> 6) & 0xE0) | 0x10); // 2K buffers
       #endif
     } else {
       // receive buffers
-      SPI.transfer(addr >> 8);
-      SPI.transfer(addr & 0xFF);
+      SPI1.transfer(addr >> 8);
+      SPI1.transfer(addr & 0xFF);
       #if defined(W5500_16K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x00) | 0x18); // 16K buffers
+      SPI1.transfer(((addr >> 7) & 0x00) | 0x18); // 16K buffers
       #elif defined(W5500_8K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x20) | 0x18); // 8K buffers
+      SPI1.transfer(((addr >> 7) & 0x20) | 0x18); // 8K buffers
   		#elif defined(W5500_4K_BUFFERS)
-      SPI.transfer(((addr >> 7) & 0x60) | 0x18); // 4K buffers
+      SPI1.transfer(((addr >> 7) & 0x60) | 0x18); // 4K buffers
       #else
-      SPI.transfer(((addr >> 6) & 0xE0) | 0x18); // 2K buffers
+      SPI1.transfer(((addr >> 6) & 0xE0) | 0x18); // 2K buffers
       #endif
     }
     for (uint16_t i=0; i<len; i++) {
-      buf[i] = SPI.transfer(0);
+      buf[i] = SPI1.transfer(0);
     }
     resetSS();
   }
