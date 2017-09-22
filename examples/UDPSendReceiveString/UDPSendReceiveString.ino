@@ -35,7 +35,31 @@ char ReplyBuffer[] = "acknowledged";        // a string to send back
 EthernetUDP Udp;
 
 #define PIN_RESET 24
+
 void setup() {
+  SPI1.setMOSI(0);
+	SPI1.setMISO(1);
+	SPI1.setSCK(32);
+  SPI1.setCS(31);
+  pinMode(13, OUTPUT);
+  digitalWrite(13,LOW);
+  delay(200);
+  // digitalWrite(13, SPI1.pinIsMOSI(0));
+  // delay(200);
+  // digitalWrite(13,LOW);
+  // delay(200);
+	// digitalWrite(13, SPI1.pinIsMISO(1));
+  // delay(200);
+  // digitalWrite(13,LOW);
+  // delay(200);
+	// digitalWrite(13, SPI1.pinIsSCK(32));
+  // delay(200);
+  // digitalWrite(13,LOW);
+  // delay(200);
+  // digitalWrite(13, SPI1.pinIsChipSelect(31));
+  // delay(200);
+  // digitalWrite(13,LOW);
+  // delay(200);
   // start the Ethernet and UDP:
   #ifdef PIN_RESET
     pinMode(PIN_RESET, OUTPUT);
@@ -44,6 +68,10 @@ void setup() {
     digitalWrite(PIN_RESET, HIGH);
     delay(150);
   #endif
+  digitalWrite(13,HIGH);
+  delay(200);
+  digitalWrite(13,LOW);
+  delay(200);
   Ethernet.begin(mac, ip);
   Udp.begin(localPort);
 
