@@ -34,8 +34,16 @@ char ReplyBuffer[] = "acknowledged";        // a string to send back
 // An EthernetUDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
 
+#define PIN_RESET 24
 void setup() {
   // start the Ethernet and UDP:
+  #ifdef PIN_RESET
+    pinMode(PIN_RESET, OUTPUT);
+    digitalWrite(PIN_RESET, LOW);
+    delayMicroseconds(2);
+    digitalWrite(PIN_RESET, HIGH);
+    delay(150);
+  #endif
   Ethernet.begin(mac, ip);
   Udp.begin(localPort);
 
