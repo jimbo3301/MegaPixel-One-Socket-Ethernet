@@ -125,6 +125,7 @@ uint8_t W5100Class::init(void)
 			writeSnRX_SIZE(i, 0);
 			writeSnTX_SIZE(i, 0);
 		}
+
 	// Try W5500 next.  Wiznet finally seems to have implemented
 	// SPI well with this chip.  It appears to be very resilient,
 	// so try it after the fragile W5200
@@ -261,77 +262,83 @@ uint16_t W5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 
   if (chip == 51) {
     for (i=0; i<len; i++) {
-	SPIFIFO.write16(0xF000 | (addr >> 8), SPI_CONTINUE);
-	SPIFIFO.write16((addr << 8) | buf[i]);
+	SPIFIFO1.write16(0xF000 | (addr >> 8), SPI_CONTINUE);
+	SPIFIFO1.write16((addr << 8) | buf[i]);
 	addr++;
-	SPIFIFO.read();
-	SPIFIFO.read();
+	SPIFIFO1.read();
+	SPIFIFO1.read();
     }
   } else if (chip == 52) {
-	SPIFIFO.clear();
-	SPIFIFO.write16(addr, SPI_CONTINUE);
-	SPIFIFO.write16(len | 0x8000, SPI_CONTINUE);
+	SPIFIFO1.clear();
+	SPIFIFO1.write16(addr, SPI_CONTINUE);
+	SPIFIFO1.write16(len | 0x8000, SPI_CONTINUE);
 	for (i=0; i<len; i++) {
-		SPIFIFO.write(buf[i], ((i+1<len) ? SPI_CONTINUE : 0));
-		SPIFIFO.read();
+		SPIFIFO1.write(buf[i], ((i+1<len) ? SPI_CONTINUE : 0));
+    // //---------------remove this-------------------------
+    // digitalWrite(13,HIGH);
+    // delay(200);
+    // digitalWrite(13,LOW);
+    // delay(200);
+    // //------------------------------------------
+		SPIFIFO1.read();
 	}
-	SPIFIFO.read();
-	SPIFIFO.read();
+	SPIFIFO1.read();
+	SPIFIFO1.read();
   } else {
-	//SPIFIFO.clear();
-	SPIFIFO.write16(addr, SPI_CONTINUE);
+	//SPIFIFO1.clear();
+	SPIFIFO1.write16(addr, SPI_CONTINUE);
 	if (addr < 0x100) {
 		// common registers 00nn
-		SPIFIFO.write16(0x0400 | *buf++,
+		SPIFIFO1.write16(0x0400 | *buf++,
 			((len > 1) ? SPI_CONTINUE : 0));
 	} else if (addr < 0x8000) {
 		// socket registers  10nn, 11nn, 12nn, 13nn, etc
-		SPIFIFO.write16(((addr << 5) & 0xE000) | 0x0C00 | *buf++,
+		SPIFIFO1.write16(((addr << 5) & 0xE000) | 0x0C00 | *buf++,
 			((len > 1) ? SPI_CONTINUE : 0));
 	} else if (addr < 0xC000) {
 		// transmit buffers  8000-87FF, 8800-8FFF, 9000-97FF, etc
     #if defined(W5500_16K_BUFFERS)
-    SPIFIFO.write16(((addr << 1) & 0x0000) | 0x1400 | *buf++, // 16K buffers
+    SPIFIFO1.write16(((addr << 1) & 0x0000) | 0x1400 | *buf++, // 16K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
     #elif defined(W5500_8K_BUFFERS)
-		SPIFIFO.write16(((addr << 1) & 0x2000) | 0x1400 | *buf++, // 8K buffers
+		SPIFIFO1.write16(((addr << 1) & 0x2000) | 0x1400 | *buf++, // 8K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#elif defined(W5500_4K_BUFFERS)
-		SPIFIFO.write16(((addr << 1) & 0x6000) | 0x1400 | *buf++, // 4K buffers
+		SPIFIFO1.write16(((addr << 1) & 0x6000) | 0x1400 | *buf++, // 4K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#else
-		SPIFIFO.write16(((addr << 2) & 0xE000) | 0x1400 | *buf++, // 2K buffers
+		SPIFIFO1.write16(((addr << 2) & 0xE000) | 0x1400 | *buf++, // 2K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#endif
 	} else {
 		// receive buffers
     #if defined(W5500_16K_BUFFERS)
-    SPIFIFO.write16(((addr << 1) & 0x0000) | 0x1C00 | *buf++, // 16K buffers
+    SPIFIFO1.write16(((addr << 1) & 0x0000) | 0x1C00 | *buf++, // 16K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
     #elif defined(W5500_8K_BUFFERS)
-		SPIFIFO.write16(((addr << 1) & 0x2000) | 0x1C00 | *buf++, // 8K buffers
+		SPIFIFO1.write16(((addr << 1) & 0x2000) | 0x1C00 | *buf++, // 8K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#elif defined(W5500_4K_BUFFERS)
-		SPIFIFO.write16(((addr << 1) & 0x6000) | 0x1C00 | *buf++, // 4K buffers
+		SPIFIFO1.write16(((addr << 1) & 0x6000) | 0x1C00 | *buf++, // 4K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#else
-		SPIFIFO.write16(((addr << 2) & 0xE000) | 0x1C00 | *buf++, // 2K buffers
+		SPIFIFO1.write16(((addr << 2) & 0xE000) | 0x1C00 | *buf++, // 2K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#endif
 	}
 	len--;
 	while (len >= 2) {
 		len -= 2;
-		SPIFIFO.write16((*buf << 8) | *(buf+1), (len == 0) ? 0 : SPI_CONTINUE);
+		SPIFIFO1.write16((*buf << 8) | *(buf+1), (len == 0) ? 0 : SPI_CONTINUE);
 		buf += 2;
-		SPIFIFO.read();
+		SPIFIFO1.read();
 	}
 	if (len) {
-		SPIFIFO.write(*buf);
-		SPIFIFO.read();
+		SPIFIFO1.write(*buf);
+		SPIFIFO1.read();
 	}
-	SPIFIFO.read();
-	SPIFIFO.read();
+	SPIFIFO1.read();
+	SPIFIFO1.read();
   }
   return len;
 }
@@ -421,41 +428,41 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
   if (chip == 51) {
     for (i=0; i<len; i++) {
 	#if 1
-	SPIFIFO.write(0x0F, SPI_CONTINUE);
-	SPIFIFO.write16(addr, SPI_CONTINUE);
+	SPIFIFO1.write(0x0F, SPI_CONTINUE);
+	SPIFIFO1.write16(addr, SPI_CONTINUE);
 	addr++;
-	SPIFIFO.read();
-	SPIFIFO.write(0);
-	SPIFIFO.read();
-	buf[i] = SPIFIFO.read();
+	SPIFIFO1.read();
+	SPIFIFO1.write(0);
+	SPIFIFO1.read();
+	buf[i] = SPIFIFO1.read();
 	#endif
 	#if 0
 	// this does not work, but why?
-	SPIFIFO.write16(0x0F00 | (addr >> 8), SPI_CONTINUE);
-	SPIFIFO.write16(addr << 8);
+	SPIFIFO1.write16(0x0F00 | (addr >> 8), SPI_CONTINUE);
+	SPIFIFO1.write16(addr << 8);
 	addr++;
-	SPIFIFO.read();
-	buf[i] = SPIFIFO.read();
+	SPIFIFO1.read();
+	buf[i] = SPIFIFO1.read();
 	#endif
     }
   } else if (chip == 52) {
 	// len = 1:  write header, write 1 byte, read
 	// len = 2:  write header, write 2 byte, read
 	// len = 3,5,7
-	SPIFIFO.clear();
-	SPIFIFO.write16(addr, SPI_CONTINUE);
-	SPIFIFO.write16(len & 0x7FFF, SPI_CONTINUE);
-	SPIFIFO.read();
+	SPIFIFO1.clear();
+	SPIFIFO1.write16(addr, SPI_CONTINUE);
+	SPIFIFO1.write16(len & 0x7FFF, SPI_CONTINUE);
+	SPIFIFO1.read();
 	if (len == 1) {
 		// read only 1 byte
-		SPIFIFO.write(0);
-		SPIFIFO.read();
-		*buf = SPIFIFO.read();
+		SPIFIFO1.write(0);
+		SPIFIFO1.read();
+		*buf = SPIFIFO1.read();
 	} else if (len == 2) {
 		// read only 2 bytes
-		SPIFIFO.write16(0);
-		SPIFIFO.read();
-		uint32_t val = SPIFIFO.read();
+		SPIFIFO1.write16(0);
+		SPIFIFO1.read();
+		uint32_t val = SPIFIFO1.read();
 		*buf++ = val >> 8;
 		*buf = val;
 	} else if ((len & 1)) {
@@ -463,12 +470,12 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
   		//Serial.print("W5200 read, len=");
 		//Serial.println(len);
 		uint32_t count = len / 2;
-		SPIFIFO.write16(0, SPI_CONTINUE);
-		SPIFIFO.read();
+		SPIFIFO1.write16(0, SPI_CONTINUE);
+		SPIFIFO1.read();
 		do {
-			if (count > 1) SPIFIFO.write16(0, SPI_CONTINUE);
-			else SPIFIFO.write(0);
-			uint32_t val = SPIFIFO.read();
+			if (count > 1) SPIFIFO1.write16(0, SPI_CONTINUE);
+			else SPIFIFO1.write(0);
+			uint32_t val = SPIFIFO1.read();
 			//TODO: WebClient_speedtest with READSIZE 7 is
 			//dramatically faster with this Serial.print(),
 			//and the 2 above, but not without both.  Why?!
@@ -476,104 +483,104 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			*buf++ = val >> 8;
 			*buf++ = val;
 		} while (--count > 0);
-		*buf = SPIFIFO.read();
+		*buf = SPIFIFO1.read();
 		//Serial.println(*buf, HEX);
 	} else {
 		// read 4 or more, even length
   		//Serial.print("W5200 read, len=");
 		//Serial.println(len);
 		uint32_t count = len / 2 - 1;
-		SPIFIFO.write16(0, SPI_CONTINUE);
-		SPIFIFO.read();
+		SPIFIFO1.write16(0, SPI_CONTINUE);
+		SPIFIFO1.read();
 		do {
-			SPIFIFO.write16(0, (count > 1) ? SPI_CONTINUE : 0);
-			uint32_t val = SPIFIFO.read();
+			SPIFIFO1.write16(0, (count > 1) ? SPI_CONTINUE : 0);
+			uint32_t val = SPIFIFO1.read();
 			*buf++ = val >> 8;
 			*buf++ = val;
 		} while (--count > 0);
-		uint32_t val = SPIFIFO.read();
+		uint32_t val = SPIFIFO1.read();
 		*buf++ = val >> 8;
 		*buf++ = val;
 	}
   } else {
-	//SPIFIFO.clear();
-	SPIFIFO.write16(addr, SPI_CONTINUE);
+	//SPIFIFO1.clear();
+	SPIFIFO1.write16(addr, SPI_CONTINUE);
 	if (addr < 0x100) {
 		// common registers 00nn
-		SPIFIFO.write16(0,
+		SPIFIFO1.write16(0,
 			((len > 1) ? SPI_CONTINUE : 0));
 	} else if (addr < 0x8000) {
 		// socket registers  10nn, 11nn, 12nn, 13nn, etc
-		SPIFIFO.write16(((addr << 5) & 0xE000) | 0x0800,
+		SPIFIFO1.write16(((addr << 5) & 0xE000) | 0x0800,
 			((len > 1) ? SPI_CONTINUE : 0));
 	} else if (addr < 0xC000) {
 		// transmit buffers  8000-87FF, 8800-8FFF, 9000-97FF, etc
     #if defined(W5500_16K_BUFFERS)
-    SPIFIFO.write16(((addr << 1) & 0x0000) | 0x1000, // 16K buffers
+    SPIFIFO1.write16(((addr << 1) & 0x0000) | 0x1000, // 16K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
     #elif defined(W5500_8K_BUFFERS)
-    SPIFIFO.write16(((addr << 1) & 0x2000) | 0x1000, // 8K buffers
+    SPIFIFO1.write16(((addr << 1) & 0x2000) | 0x1000, // 8K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#elif defined(W5500_4K_BUFFERS)
-		SPIFIFO.write16(((addr << 1) & 0x6000) | 0x1000, // 4K buffers
+		SPIFIFO1.write16(((addr << 1) & 0x6000) | 0x1000, // 4K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#else
-		SPIFIFO.write16(((addr << 2) & 0xE000) | 0x1000, // 2K buffers
+		SPIFIFO1.write16(((addr << 2) & 0xE000) | 0x1000, // 2K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#endif
 	} else {
 		// receive buffers
     #if defined(W5500_16K_BUFFERS)
-    SPIFIFO.write16(((addr << 1) & 0x0000) | 0x1800, // 16K buffers
+    SPIFIFO1.write16(((addr << 1) & 0x0000) | 0x1800, // 16K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
     #elif defined(W5500_8K_BUFFERS)
-    SPIFIFO.write16(((addr << 1) & 0x2000) | 0x1800, // 8K buffers
+    SPIFIFO1.write16(((addr << 1) & 0x2000) | 0x1800, // 8K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#elif defined(W5500_4K_BUFFERS)
-		SPIFIFO.write16(((addr << 1) & 0x6000) | 0x1800, // 4K buffers
+		SPIFIFO1.write16(((addr << 1) & 0x6000) | 0x1800, // 4K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#else
-		SPIFIFO.write16(((addr << 2) & 0xE000) | 0x1800, // 2K buffers
+		SPIFIFO1.write16(((addr << 2) & 0xE000) | 0x1800, // 2K buffers
 			((len > 1) ? SPI_CONTINUE : 0));
 		#endif
 	}
-	SPIFIFO.read();
+	SPIFIFO1.read();
 	if (len <= 1) {
-		*buf++ = SPIFIFO.read();
+		*buf++ = SPIFIFO1.read();
 	} else if (len == 2) {
-		SPIFIFO.write(0);
-		*buf++ = SPIFIFO.read();
-		*buf++ = SPIFIFO.read();
+		SPIFIFO1.write(0);
+		*buf++ = SPIFIFO1.read();
+		*buf++ = SPIFIFO1.read();
 	} else if (len & 1) {
 		uint32_t count = len >> 1;
-		SPIFIFO.write16(0, (count > 1) ? SPI_CONTINUE : 0);
-		*buf++ = SPIFIFO.read();
+		SPIFIFO1.write16(0, (count > 1) ? SPI_CONTINUE : 0);
+		*buf++ = SPIFIFO1.read();
 		while (count > 1) {
 			count--;
-			SPIFIFO.write16(0, (count > 1) ? SPI_CONTINUE : 0);
-			uint32_t val = SPIFIFO.read();
+			SPIFIFO1.write16(0, (count > 1) ? SPI_CONTINUE : 0);
+			uint32_t val = SPIFIFO1.read();
 			*buf++ = val >> 8;
 			*buf++ = val;
 		}
-		uint32_t val = SPIFIFO.read();
+		uint32_t val = SPIFIFO1.read();
 		*buf++ = val >> 8;
 		*buf++ = val;
 	} else {
-		SPIFIFO.write16(0, SPI_CONTINUE);
-		*buf++ = SPIFIFO.read();
+		SPIFIFO1.write16(0, SPI_CONTINUE);
+		*buf++ = SPIFIFO1.read();
 		uint32_t count = len >> 1;
 		while (count > 1) {
 			count--;
 			if (count > 1) {
-				SPIFIFO.write16(0, SPI_CONTINUE);
+				SPIFIFO1.write16(0, SPI_CONTINUE);
 			} else {
-				SPIFIFO.write(0, 0);
+				SPIFIFO1.write(0, 0);
 			}
-			uint32_t val = SPIFIFO.read();
+			uint32_t val = SPIFIFO1.read();
 			*buf++ = val >> 8;
 			*buf++ = val;
 		}
-		*buf = SPIFIFO.read();
+		*buf = SPIFIFO1.read();
 	}
   }
   return len;
