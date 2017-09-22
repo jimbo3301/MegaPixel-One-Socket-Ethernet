@@ -87,8 +87,8 @@ uint8_t W5100Class::init(void)
 	//Serial.println("w5100 init");
 
 #ifdef USE_SPIFIFO
-	SPIFIFO.begin(ss_pin, SPI_CLOCK_MAX);  // W5100 is 14 MHz max
 	SPI1.begin();
+	SPIFIFO1.begin(ss_pin, SPI_CLOCK_24MHz);  // W5100 is 14 MHz max
 #else
 	SPI1.begin();
 	initSS();
