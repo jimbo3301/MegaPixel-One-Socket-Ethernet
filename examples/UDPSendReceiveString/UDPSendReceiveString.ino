@@ -37,10 +37,10 @@ EthernetUDP Udp;
 #define PIN_RESET 24
 
 void setup() {
+  Serial.begin(115200);
   SPI1.setMOSI(0);
 	SPI1.setMISO(1);
 	SPI1.setSCK(32);
-  SPI1.setCS(31);
   pinMode(13, OUTPUT);
   digitalWrite(13,LOW);
   delay(200);
@@ -72,11 +72,12 @@ void setup() {
   delay(200);
   digitalWrite(13,LOW);
   delay(200);
+  Serial.println("begin");
   Ethernet.begin(mac, ip);
   Udp.begin(localPort);
 
+Serial.println("done");
 
-  //Serial.begin(9600);
 }
 
 void loop() {
