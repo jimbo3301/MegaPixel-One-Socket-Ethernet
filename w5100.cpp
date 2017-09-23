@@ -10,30 +10,34 @@
 #include "w5100.h"
 
 #if defined(__arm__) && defined(TEENSYDUINO)
-#include "SPIFIFO.h"
-#ifdef  HAS_SPIFIFO
-#define USE_SPIFIFO
+// #include "SPIFIFO.h"
+// #ifdef  HAS_SPIFIFO
+// #define USE_SPIFIFO
+// #endif
 #endif
-#endif
-// #define W5500_2K_BUFFERS
+
+#define W5500_2K_BUFFERS
 // #define W5500_4K_BUFFERS
-#define W5500_16K_BUFFERS
+// #define W5500_16K_BUFFERS
 
 
-//#define W5200_2K_BUFFERS
+#define W5200_2K_BUFFERS
 // #define W5200_4K_BUFFERS
 //#define W5200_8K_BUFFERS        //MAX_SOCK_NUM has to be 2
-#define W5200_16K_BUFFERS        //MAX_SOCK_NUM has to be 1
+// #define W5200_16K_BUFFERS        //MAX_SOCK_NUM has to be 1
 
 // If the core library defines a SS pin, use it as the
 // default.  Otherwise, default the default to pin 10.
-#if defined(PIN_SPI_SS)
-#define SS_PIN_DEFAULT  PIN_SPI_SS
-#elif defined(CORE_SS0_PIN)
-#define SS_PIN_DEFAULT  CORE_SS0_PIN
-#else
+// #if defined(PIN_SPI_SS)
+// #define SS_PIN_DEFAULT  PIN_SPI_SS
+// #elif defined(CORE_SS0_PIN)
+// #define SS_PIN_DEFAULT  CORE_SS0_PIN
+// #else
+// #define SS_PIN_DEFAULT  10
+// #endif
+
 #define SS_PIN_DEFAULT  31//10
-#endif
+
 
 // W5100 controller instance
 uint16_t W5100Class::SBASE[MAX_SOCK_NUM];
