@@ -16,9 +16,9 @@
 // #endif
 #endif
 
-#define W5500_2K_BUFFERS
+//#define W5500_2K_BUFFERS
 // #define W5500_4K_BUFFERS
-// #define W5500_16K_BUFFERS
+#define W5500_16K_BUFFERS
 
 
 #define W5200_2K_BUFFERS
