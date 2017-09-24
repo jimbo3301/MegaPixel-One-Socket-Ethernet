@@ -648,9 +648,11 @@ uint16_t W5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
       SPI1.transfer(((addr >> 6) & 0xE0) | 0x18); // 2K buffers
       #endif
     }
-    for (uint16_t i=0; i<len; i++) {
-      buf[i] = SPI1.transfer(0);
-    }
+    memset(buf, 0, len);
+    SPI1.transfer(buf, buf, len);
+    // for (uint16_t i=0; i<len; i++) {
+    //   buf[i] = SPI1.transfer(0);
+    // }
     resetSS();
   }
   return len;
