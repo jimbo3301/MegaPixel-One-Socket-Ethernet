@@ -18,7 +18,11 @@
 
 // Safe for W5200 and W5500, but too fast for W5100
 // uncomment this if you know you'll never need W5100 support
+#if F_BUS > 90000000
+#define SPI_ETHERNET_SETTINGS SPISettings(F_BUS/3, MSBFIRST, SPI_MODE0)
+#else
 #define SPI_ETHERNET_SETTINGS SPISettings(F_BUS/2, MSBFIRST, SPI_MODE0)
+#endif
 
 #define MAX_SOCK_NUM 1
 
