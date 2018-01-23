@@ -46,6 +46,7 @@ public:
 private:
 	// Opens a socket(TCP or UDP or IP_RAW mode)
 	static uint8_t socketBegin(uint8_t protocol, uint16_t port);
+	static uint8_t socketBeginMulticast(uint8_t protocol, IPAddress ip,uint16_t port);
 	static uint8_t socketStatus(uint8_t s);
 	// Close socket
 	static void socketClose(uint8_t s);
@@ -179,15 +180,14 @@ private:
 class EthernetServer : public Server {
 private:
 	uint16_t _port;
-	uint8_t sockindex;
-	void accept();
 public:
-	EthernetServer(uint16_t port) : _port(port), sockindex(MAX_SOCK_NUM) { }
+	EthernetServer(uint16_t port) : _port(port) { }
 	EthernetClient available();
 	virtual void begin();
 	virtual size_t write(uint8_t);
 	virtual size_t write(const uint8_t *buf, size_t size);
 	using Print::write;
+	//void statusreport();
 
 	// TODO: make private when socket allocation moves to EthernetClass
 	static uint16_t server_port[MAX_SOCK_NUM];
