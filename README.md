@@ -1,6 +1,6 @@
-#Ethernet Library for Teensy#
+#Ethernet Library for MegaPixel Controller powered with Teensy#
 
-Wiznet chips W5100, W5200 and W5500 are automatically detected.
+Wiznet chips W5100, W5200 and W5500 are automatically detected. However only W5200 and W5500 are only used the for controller
 
 Efficient block mode of W5200 & W5500 are used for data and multi-byte register access.
 
