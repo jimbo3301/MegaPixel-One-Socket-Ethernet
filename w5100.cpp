@@ -84,7 +84,7 @@ uint8_t W5100Class::init(void)
 
 #ifdef USE_SPIFIFO
 	SPI.begin();
-	SPIFIFO.begin(ss_pin, SPI_CLOCK_12MHz);  // W5100 is 14 MHz max
+	SPIFIFO.begin(ss_pin, SPI_CLOCK_24MHz);  // W5200 or W5500 Will not work with W5100
 #else
 	SPI.begin();
 	initSS();
