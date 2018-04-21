@@ -3,7 +3,8 @@
 
 // All symbols exposed to Arduino sketches are contained in this header file
 
-#define MAX_SOCK_NUM 4
+#define MAX_SOCK_NUM 1
+//#define MAX_SOCK_NUM 4
 
 #include <inttypes.h>
 #include "Arduino.h"
