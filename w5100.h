@@ -264,7 +264,7 @@ private:
   static uint8_t isW5500(void);
 
 public:
-  static const int SOCKETS = 4;
+  static const int SOCKETS = MAX_SOCK_NUM;
   static uint16_t SMASK;
   static uint16_t SSIZE;
 //private:
